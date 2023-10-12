@@ -15,7 +15,7 @@ $('.return-to-top').on('click', function () {
 
 // Dry box script
 
-// function getlinechart() {
+// function gethourlineChart() {
 //     const el = document.getElementById("chartdiagrambutton").style.display;
 //     console.log("THIS IS", el);
 // }
@@ -44,8 +44,8 @@ var relayonsettings = {
 	"data": "on",
 };
 
-// linechart data format for temperature in red and humidity in blue
-let chartData = {
+// hourlineChart data format for temperature in red and humidity in blue
+let hourchartData = {
 	labels: [],
 	datasets: [
 		{
@@ -63,14 +63,24 @@ let chartData = {
 	]
 };
 
-// Create the line chart
-const ctx = document.getElementById('lineChart').getContext('2d');
-const lineChart = new Chart(ctx, {
+// Create the line hour chart
+const ctx = document.getElementById('hourlineChart').getContext('2d');
+const hourlineChart = new Chart(ctx, {
 	type: 'line',
-	data: chartData,
+	data: hourchartData,
 	options: {
 		responsive: true,
-		maintainAspectRatio: false
+		maintainAspectRatio: false,
+		plugins: {
+			tooltip: {
+				mode: 'index',
+				intersect: false
+			},
+			title: {
+				display: true,
+				text: 'Hour Line Chart'
+			}
+		}
 	},
 	scales: {
 		x: {
@@ -80,9 +90,62 @@ const lineChart = new Chart(ctx, {
 			}
 		},
 		y: {
-			suggestedMin: 20,
+			Min: 20,
 			// the data maximum used for determining the ticks is Math.max(dataMax, suggestedMax)
-			suggestedMax: 80,
+			Max: 100,
+		}
+	}
+});
+
+// daylineChart data format for temperature in red and humidity in blue
+let daychartData = {
+	labels: [],
+	datasets: [
+		{
+			label: "Temperature",
+			borderColor: "red",
+			backgroundColor: "rgba(305, 0, 0, 0.1)",
+			data: []
+		},
+		{
+			label: "Humidity",
+			borderColor: "blue",
+			backgroundColor: "rgba(0, 0, 305, 0.1)",
+			data: []
+		}
+	]
+};
+
+// Create the line hour chart
+const chdm = document.getElementById('daylineChart').getContext('2d');
+const daylineChart = new Chart(chdm, {
+	type: 'line',
+	data: daychartData,
+	options: {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			tooltip: {
+				mode: 'index',
+				intersect: false
+			},
+			title: {
+				display: true,
+				text: '24 hours Line Chart'
+			}
+		}
+	},
+	scales: {
+		x: {
+			title: {
+				display: true,
+				text: 'Time'
+			}
+		},
+		y: {
+			Min: 20,
+			// the data maximum used for determining the ticks is Math.max(dataMax, suggestedMax)
+			Max: 100,
 		}
 	}
 });
@@ -105,9 +168,8 @@ var RHsetvalue;
 function doAjax() {
 	$.ajax(settings).done(function (response) {
 		savedshadowdata = response["data"];
-		console.log(response["data"]);
+		console.log("Data from Netpite:  ", response["data"]);
 		var RHvalue = savedshadowdata["humidity"];
-		var RHgaguevalue = RHvalue / 100;
 		var tempvalue = savedshadowdata["temperature"];
 		// Display maual button status from Netpie Shadow data
 		var manualvalue = savedshadowdata["manual"];
@@ -161,36 +223,164 @@ function doAjax() {
 // setTimeout(doAjax, 2000);
 setInterval(doAjax, 2500);
 
-// Fetch temp and RH data from server using jQuery's AJAX method
-function fetchDataAndUpdateChart() {
-	$.ajax({
-		url: 'https://api.netpie.io/v2/device/shadow/data', // Replace with the API URL to fetch data from the server
-		method: 'GET',
-		headers: {
-			"Authorization": "Device b5e48c97-47cb-40bf-a297-138ba674e42b:DzXWGRyto8SmEhXfKja9u8qMuMV5nz6Q"
+var hourdigramsettings = {
+	"url": "https://api.netpie.io/v2/feed/api/v1/datapoints/query",
+	"method": "POST",
+	"timeout": 0,
+	"headers": {
+		"Content-Type": "application/json",
+		"Authorization": "Device b5e48c97-47cb-40bf-a297-138ba674e42b:DzXWGRyto8SmEhXfKja9u8qMuMV5nz6Q"
+	},
+	"data": JSON.stringify({
+		"start_relative": {
+			"value": 1,
+			"unit": "hours"
 		},
-		success: function (response) {
-			// Assuming the JSON response is like: {"data": {"temperature": 30, "humidity": 60}}
-			var temperature = response["data"]["temperature"];
-			var humidity = response["data"]["humidity"];
-			// Update the chart data with the fetched data
-			const timestamp = new Date().toLocaleTimeString();
-			chartData.labels.push(timestamp);
-			chartData.datasets[0].data.push(temperature);
-			chartData.datasets[1].data.push(humidity);
-			// Limit the number of data points shown on the chart (e.g., last 10 data points)
-			if (chartData.labels.length > 10) {
-				chartData.labels.shift();
-				chartData.datasets[0].data.shift();
-				chartData.datasets[1].data.shift();
+		"metrics": [
+			{
+				"name": "b5e48c97-47cb-40bf-a297-138ba674e42b",
+				"tags": {
+					"attr": [
+						"temperature",
+						"humidity"
+					]
+				},
+				"group_by": [
+					{
+						"name": "tag",
+						"tags": [
+							"attr"
+						]
+					}
+				],
+				"aggregators": [
+					{
+						"name": "avg",
+						"sampling": {
+							"value": 1,
+							"unit": "minutes"
+						}
+					}
+				]
 			}
-			// Update the chart
-			lineChart.update();
-		}
-	});
-}
-// Fetch and update chart data every 10 second
-setInterval(fetchDataAndUpdateChart, 10000);
+		]
+	}),
+};
+
+
+$.ajax(hourdigramsettings).done(function (hourdigramresponse) {
+	var RHhourvalues = hourdigramresponse["queries"]["0"]["results"]["0"]["values"];
+	var temphourvalues = hourdigramresponse["queries"]["0"]["results"]["1"]["values"];
+	var array1 = [];
+	var array2 = [];
+	var arraytimestamp = [];
+	for (var i = 0; i < RHhourvalues.length; i++) {
+		// var split = .push(RHhourvalues[i]);
+		array1.push(RHhourvalues[i]["1"]);
+		hourchartData.datasets[1].data.push(RHhourvalues[i]["1"]);
+
+		const converttime = new Date(RHhourvalues[i]["0"]);
+		var hourtime = converttime.getHours();
+		var mintime = converttime.getMinutes();
+		var realtime = hourtime + ':' + mintime;
+		// // const hourtime = new Intl.DateTimeFormat(options).format(RHhourvalues[i]["0"]);
+		// console.log("Relatime IS", realtime);
+		arraytimestamp.push(RHhourvalues[i]["0"]);
+		hourchartData.labels.push(realtime);
+		// hourchartData.labels.push(RHhourvalues[i]["0"]);
+	}
+	for (var i = 0; i < temphourvalues.length; i++) {
+		// var split = .push(RHhourvalues[i]);
+		hourchartData.datasets[0].data.push(temphourvalues[i]["1"]);
+		array2.push(temphourvalues[i]["1"]);
+	}
+	// console.log("HOUR timestamp:", arraytimestamp);
+	// console.log("HOUR RH:", array1);
+	// // console.log("HOUR DIAGRAM RH:", RHhourvalues);
+	// console.log("HOUR TEMP:", array2);
+
+	// Update the chart
+	hourlineChart.update();
+});
+
+var daydigramsettings = {
+	"url": "https://api.netpie.io/v2/feed/api/v1/datapoints/query",
+	"method": "POST",
+	"timeout": 0,
+	"headers": {
+		"Content-Type": "application/json",
+		"Authorization": "Device b5e48c97-47cb-40bf-a297-138ba674e42b:DzXWGRyto8SmEhXfKja9u8qMuMV5nz6Q"
+	},
+	"data": JSON.stringify({
+		"start_relative": {
+			"value": 1,
+			"unit": "days"
+		},
+		"metrics": [
+			{
+				"name": "b5e48c97-47cb-40bf-a297-138ba674e42b",
+				"tags": {
+					"attr": [
+						"temperature",
+						"humidity"
+					]
+				},
+				"group_by": [
+					{
+						"name": "tag",
+						"tags": [
+							"attr"
+						]
+					}
+				],
+				"aggregators": [
+					{
+						"name": "avg",
+						"sampling": {
+							"value": 1,
+							"unit": "hours"
+						}
+					}
+				]
+			}
+		]
+	}),
+};
+
+$.ajax(daydigramsettings).done(function (daydigramresponse) {
+	var RHdayvalues = daydigramresponse["queries"]["0"]["results"]["0"]["values"];
+	var tempdayvalues = daydigramresponse["queries"]["0"]["results"]["1"]["values"];
+	var array1 = [];
+	var array2 = [];
+	var arraytimestamp = [];
+	for (var i = 0; i < RHdayvalues.length; i++) {
+		// var split = .push(RHdayvalues[i]);
+		array1.push(RHdayvalues[i]["1"]);
+		daychartData.datasets[1].data.push(RHdayvalues[i]["1"]);
+
+		const converttime = new Date(RHdayvalues[i]["0"]);
+		var hourtime = converttime.getHours();
+		var mintime = converttime.getMinutes();
+		var realtime = hourtime + ':' + mintime;
+		// // const hourtime = new Intl.DateTimeFormat(options).format(RHdayvalues[i]["0"]);
+		// console.log("Relatime IS", realtime);
+		arraytimestamp.push(RHdayvalues[i]["0"]);
+		daychartData.labels.push(realtime);
+		// hourchartData.labels.push(RHdayvalues[i]["0"]);
+	}
+	for (var i = 0; i < tempdayvalues.length; i++) {
+		// var split = .push(RHdayvalues[i]);
+		daychartData.datasets[0].data.push(tempdayvalues[i]["1"]);
+		array2.push(tempdayvalues[i]["1"]);
+	}
+	// console.log("HOUR timestamp:", arraytimestamp);
+	// console.log("HOUR RH:", array1);
+	// // console.log("HOUR DIAGRAM RH:", RHdayvalues);
+	// console.log("HOUR TEMP:", array2);
+
+	// Update the chart
+	daylineChart.update();
+});
 
 // For auto mode on, it needs to have comparsion between RH value from sensor and RH setting value
 function compareRH(autovalue, RHvalue, RHsetvalue) {
@@ -393,7 +583,42 @@ function getRHsetting() {
 	compareRH(autobuttonvalue, RHvalue, RHsettext);
 }
 
-function showdiagram() {
-	// document.getElementById("chartContainer").className = "collapsing";
-	$('#chartContainer').toggleClass('hidden');
+// function showdiagram() {
+// 	// document.getElementById("chartContainer").className = "collapsing";
+// 	$('#chartContainer').toggleClass('hidden');
+// }
+
+document.getElementById("hourchartContainer").style.display = "none";
+
+var coll = document.getElementsByClassName("collapsiblehour");
+var count;
+
+for (count = 0; count < coll.length; count++) {
+	coll[count].addEventListener("click", function () {
+		this.classList.toggle("active");
+		var content = document.getElementById("hourchartContainer");
+		if (content.style.display === "block") {
+			content.style.display = "none";
+			// document.getElementById("chartContainer").style.display = "none";
+		} else {
+			content.style.display = "block";
+		}
+	});
+}
+
+document.getElementById("daychartContainer").style.display = "none";
+
+var collapsed = document.getElementsByClassName("collapsibleday");
+
+for (count = 0; count < collapsed.length; count++) {
+	collapsed[count].addEventListener("click", function () {
+		this.classList.toggle("active");
+		var content = document.getElementById("daychartContainer");
+		if (content.style.display === "block") {
+			content.style.display = "none";
+			// document.getElementById("chartContainer").style.display = "none";
+		} else {
+			content.style.display = "block";
+		}
+	});
 }

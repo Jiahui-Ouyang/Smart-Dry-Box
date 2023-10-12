@@ -1,3 +1,3 @@
 # Smart-Dry-Box
-#Senior Project: Smart Dry box
-Source Code uploaded in Github
+Senior Project: Smart Dry box
+Source Codes uploaded in Github
