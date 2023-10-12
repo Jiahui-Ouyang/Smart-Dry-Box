@@ -1,3 +1,3 @@
 # Smart-Dry-Box
-## Senior Project: Smart Dry box[https://github.com/Jiahui-Ouyang/Smart-Dry-Box/tree/main](url)
+## Senior Project: Smart Dry box
 Source Code uploaded in Github
