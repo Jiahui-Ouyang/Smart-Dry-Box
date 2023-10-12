@@ -1,2 +1,3 @@
 # Smart-Dry-Box
- Smart dry box source codes
+#Senior Project: Smart Dry box
+Source Code uploaded in Github
