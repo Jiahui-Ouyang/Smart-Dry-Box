@@ -42,57 +42,84 @@ var relayonsettings = {
     "data": "{ \"relay\": \"1\" }",
 };
 
+var linealertonsettings = {
+    "url": "https://notify-api.line.me/api/notify",
+    "method": "POST",
+    "timeout": 0,
+    "headers": {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "Bearer cdVag98qdw8B5J4tAZscHW8TrQNanXSdtXCibnhus02"
+    },
+    "data": {
+        "message": "Turn on now!"
+    }
+};
+
+var linealertoffsettings = {
+    "url": "https://notify-api.line.me/api/notify",
+    "method": "POST",
+    "timeout": 0,
+    "headers": {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "Bearer cdVag98qdw8B5J4tAZscHW8TrQNanXSdtXCibnhus02"
+    },
+    "data": {
+        "message": "Turn off now!"
+    }
+};
+
+
 // hourlineChart data format for temperature in red and humidity in blue
 let hourchartData = {
-	labels: [],
-	datasets: [
-		{
-			label: "Temperature",
-			borderColor: "red",
-			backgroundColor: "rgba(305, 0, 0, 0.1)",
-			data: []
-		},
-		{
-			label: "Humidity",
-			borderColor: "blue",
-			backgroundColor: "rgba(0, 0, 305, 0.1)",
-			data: []
-		}
-	]
+    labels: [],
+    datasets: [
+        {
+            label: "Temperature",
+            borderColor: "red",
+            backgroundColor: "rgba(305, 0, 0, 0.1)",
+            data: []
+        },
+        {
+            label: "Humidity",
+            borderColor: "blue",
+            backgroundColor: "rgba(0, 0, 305, 0.1)",
+            data: []
+        }
+    ]
 };
 
 // Create the line hour chart
 const ctx = document.getElementById('hourlineChart').getContext('2d');
 const hourlineChart = new Chart(ctx, {
-	type: 'line',
-	data: hourchartData,
-	options: {
-		responsive: true,
-		maintainAspectRatio: false,
-		plugins: {
-			tooltip: {
-				mode: 'index',
-				intersect: false
-			},
-			title: {
-				display: true,
-				text: 'Hour Line Chart'
-			}
-		}
-	},
-	scales: {
-		x: {
-			title: {
-				display: true,
-				text: 'Time'
-			}
-		},
-		y: {
-			Min: 20,
-			// the data maximum used for determining the ticks is Math.max(dataMax, suggestedMax)
-			Max: 100,
-		}
-	}
+    type: 'line',
+    data: hourchartData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            tooltip: {
+                mode: 'index',
+                intersect: false
+            },
+            title: {
+                display: true,
+                text: 'Hour Line Chart'
+            }
+        }
+    },
+    scales: {
+        x: {
+            title: {
+                display: true,
+                text: 'Time'
+            }
+        },
+        y: {
+            Min: 20,
+            // the data maximum used for determining the ticks is Math.max(dataMax, suggestedMax)
+            Max: 100,
+        }
+    }
 });
 
 // Fetch variables from Firebase into FirebaseIOT array Realtime database
@@ -258,6 +285,9 @@ function compareRH(autovalue, RHvalue, RHsetvalue) {
             });
             $.ajax(relayonsettings).done(function (relayonresponse) {
             });
+            $.ajax(linealertonsettings).done(function (linealertonresponse) {
+                // console.log(linealertonresponse);
+            });
         }
         // If not, publish the RHsetting value and relay "off" status to Firebase into FirebaseIOT array Realtime database
         else {
@@ -273,6 +303,9 @@ function compareRH(autovalue, RHvalue, RHsetvalue) {
             $.ajax(RHsetvaluesettings).done(function (RHsettingresponse) {
             });
             $.ajax(relayoffsettings).done(function (relayoffresponse) {
+            });
+            $.ajax(linealertoffsettings).done(function (linealertoffresponse) {
+                // console.log(linealertoffresponse);
             });
         }
     }
@@ -346,6 +379,9 @@ function togglemanual() {
         $.ajax(relayonsettings).done(function (relayonresponse) {
         });
         console.log("TURN ON manual NOW");
+        $.ajax(linealertonsettings).done(function (linealertonresponse) {
+            // console.log(linealertonresponse);
+        });
     }
     else {
         $.ajax(manualoffsettings).done(function (manualoffresponse) {
@@ -353,6 +389,9 @@ function togglemanual() {
         $.ajax(relayoffsettings).done(function (relayoffresponse) {
         });
         console.log("TURN OFF manual NOW");
+        $.ajax(linealertoffsettings).done(function (linealertoffresponse) {
+            // console.log(linealertoffresponse);
+        });
     }
 }
 
