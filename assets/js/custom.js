@@ -116,7 +116,7 @@ let daychartData = {
 	]
 };
 
-// Create the line hour chart
+// Create the day line chart
 const chdm = document.getElementById('daylineChart').getContext('2d');
 const daylineChart = new Chart(chdm, {
 	type: 'line',

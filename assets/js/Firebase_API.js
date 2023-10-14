@@ -42,47 +42,57 @@ var relayonsettings = {
     "data": "{ \"relay\": \"1\" }",
 };
 
-// linechart data format for temperature in red and humidity in blue
-let chartData = {
-    labels: [],
-    datasets: [
-        {
-            label: "Temperature",
-            borderColor: "red",
-            backgroundColor: "rgba(305, 0, 0, 0.1)",
-            data: []
-        },
-        {
-            label: "Humidity",
-            borderColor: "blue",
-            backgroundColor: "rgba(0, 0, 305, 0.1)",
-            data: []
-        }
-    ]
+// hourlineChart data format for temperature in red and humidity in blue
+let hourchartData = {
+	labels: [],
+	datasets: [
+		{
+			label: "Temperature",
+			borderColor: "red",
+			backgroundColor: "rgba(305, 0, 0, 0.1)",
+			data: []
+		},
+		{
+			label: "Humidity",
+			borderColor: "blue",
+			backgroundColor: "rgba(0, 0, 305, 0.1)",
+			data: []
+		}
+	]
 };
 
-// Create the line chart
-const ctx = document.getElementById('lineChart').getContext('2d');
-const lineChart = new Chart(ctx, {
-    type: 'line',
-    data: chartData,
-    options: {
-        responsive: true,
-        maintainAspectRatio: false
-    },
-    scales: {
-        x: {
-            title: {
-                display: true,
-                text: 'Time'
-            }
-        },
-        y: {
-            suggestedMin: 20,
-            // the data maximum used for determining the ticks is Math.max(dataMax, suggestedMax)
-            suggestedMax: 80,
-        }
-    }
+// Create the line hour chart
+const ctx = document.getElementById('hourlineChart').getContext('2d');
+const hourlineChart = new Chart(ctx, {
+	type: 'line',
+	data: hourchartData,
+	options: {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			tooltip: {
+				mode: 'index',
+				intersect: false
+			},
+			title: {
+				display: true,
+				text: 'Hour Line Chart'
+			}
+		}
+	},
+	scales: {
+		x: {
+			title: {
+				display: true,
+				text: 'Time'
+			}
+		},
+		y: {
+			Min: 20,
+			// the data maximum used for determining the ticks is Math.max(dataMax, suggestedMax)
+			Max: 100,
+		}
+	}
 });
 
 // Fetch variables from Firebase into FirebaseIOT array Realtime database
@@ -156,33 +166,78 @@ function doAjax() {
 // setTimeout(doAjax, 2000);
 setInterval(doAjax, 2500);
 
-// Fetch temp and RH data from server using jQuery's AJAX method
-function fetchDataAndUpdateChart() {
-    $.ajax({
-        url: 'https://smart-dry-box-default-rtdb.firebaseio.com/FirebaseIOT.json', // Replace with the API URL to fetch data from the server
-        method: 'GET',
-        success: function (response) {
-            // Assuming the JSON response is like: {"data": {"temperature": 30, "humidity": 60}}
-            var temperature = response["temperature"];
-            var humidity = response["humidity"];
-            // Update the chart data with the fetched data
-            const timestamp = new Date().toLocaleTimeString();
-            chartData.labels.push(timestamp);
-            chartData.datasets[0].data.push(temperature);
-            chartData.datasets[1].data.push(humidity);
-            // Limit the number of data points shown on the chart (e.g., last 10 data points)
-            if (chartData.labels.length > 10) {
-                chartData.labels.shift();
-                chartData.datasets[0].data.shift();
-                chartData.datasets[1].data.shift();
-            }
-            // Update the chart
-            lineChart.update();
-        }
-    });
-}
-// Fetch and update chart data every 10 second
-setInterval(fetchDataAndUpdateChart, 10000);
+// // Fetch temp and RH data from server using jQuery's AJAX method
+// function fetchDataAndUpdateChart() {
+//     $.ajax({
+//         url: 'https://smart-dry-box-default-rtdb.firebaseio.com/FirebaseIOT.json', // Replace with the API URL to fetch data from the server
+//         method: 'GET',
+//         success: function (response) {
+//             // Assuming the JSON response is like: {"data": {"temperature": 30, "humidity": 60}}
+//             var temperature = response["temperature"];
+//             var humidity = response["humidity"];
+//             // Update the chart data with the fetched data
+//             const timestamp = new Date().toLocaleTimeString();
+//             chartData.labels.push(timestamp);
+//             chartData.datasets[0].data.push(temperature);
+//             chartData.datasets[1].data.push(humidity);
+//             // Limit the number of data points shown on the chart (e.g., last 10 data points)
+//             if (chartData.labels.length > 10) {
+//                 chartData.labels.shift();
+//                 chartData.datasets[0].data.shift();
+//                 chartData.datasets[1].data.shift();
+//             }
+//             // Update the chart
+//             lineChart.update();
+//         }
+//     });
+// }
+// // Fetch and update chart data every 10 second
+// setInterval(fetchDataAndUpdateChart, 10000);
+
+var hourdigramsettings = {
+    "url": 'https://smart-dry-box-default-rtdb.firebaseio.com/DHT11.json', // Replace with the API URL to fetch data from the server
+    "method": 'GET',
+    "timeout": 0
+};
+
+
+$.ajax(hourdigramsettings).done(function (hourdigramresponse) {
+    var RHhourvalues = Object.values(hourdigramresponse)[0]["Hum"];
+    var temphourvalues = Object.values(hourdigramresponse)[0]["Temp"];
+    var timestampvalues = Object.values(hourdigramresponse)[0]["Timestamp"]
+    var array1 = [];
+    var array2 = [];
+    var arraytimestamp = [];
+    console.log("Data from Firebase is:", hourdigramresponse);
+    // for (var i = 0; i < RHhourvalues.length; i++) {
+    //     // var split = .push(RHhourvalues[i]);
+    //     array1.push(RHhourvalues[i]["1"]);
+    //     // hourchartData.datasets[1].data.push(RHhourvalues[i]["1"]);
+
+    //     const converttime = new Date(RHhourvalues[i]["0"]);
+    //     var hourtime = converttime.getHours();
+    //     var mintime = converttime.getMinutes();
+    //     var realtime = hourtime + ':' + mintime;
+    //     const hourtime = new Intl.DateTimeFormat(options).format(RHhourvalues[i]["0"]);
+    //     console.log("Relatime IS", realtime);
+    //     arraytimestamp.push(RHhourvalues[i]["0"]);
+    //     // hourchartData.labels.push(realtime);
+    //     // hourchartData.labels.push(RHhourvalues[i]["0"]);
+    // }
+    // for (var i = 0; i < temphourvalues.length; i++) {
+    //     // var split = .push(RHhourvalues[i]);
+    //     // hourchartData.datasets[0].data.push(temphourvalues[i]["1"]);
+    //     array2.push(temphourvalues[i]["1"]);
+    // }
+    // console.log("HOUR timestamp:", arraytimestamp);
+    // console.log("HOUR RH:", array1);
+    // // console.log("HOUR DIAGRAM RH:", RHhourvalues);
+    // console.log("HOUR TEMP:", array2);
+
+    // Update the chart
+    // hourlineChart.update();
+});
+
 
 // For auto mode on, it needs to have comparsion between RH value from sensor and RH setting value
 function compareRH(autovalue, RHvalue, RHsetvalue) {
@@ -354,3 +409,37 @@ function showdiagram() {
     $('#chartContainer').toggleClass('hidden');
 }
 
+document.getElementById("hourchartContainer").style.display = "none";
+
+var coll = document.getElementsByClassName("collapsiblehour");
+var count;
+
+for (count = 0; count < coll.length; count++) {
+    coll[count].addEventListener("click", function () {
+        this.classList.toggle("active");
+        var content = document.getElementById("hourchartContainer");
+        if (content.style.display === "block") {
+            content.style.display = "none";
+            // document.getElementById("chartContainer").style.display = "none";
+        } else {
+            content.style.display = "block";
+        }
+    });
+}
+
+// document.getElementById("daychartContainer").style.display = "none";
+
+// var collapsed = document.getElementsByClassName("collapsibleday");
+
+// for (count = 0; count < collapsed.length; count++) {
+//     collapsed[count].addEventListener("click", function () {
+//         this.classList.toggle("active");
+//         var content = document.getElementById("daychartContainer");
+//         if (content.style.display === "block") {
+//             content.style.display = "none";
+//             // document.getElementById("chartContainer").style.display = "none";
+//         } else {
+//             content.style.display = "block";
+//         }
+//     });
+// }
