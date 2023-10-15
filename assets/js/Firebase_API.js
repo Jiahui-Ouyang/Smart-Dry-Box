@@ -42,85 +42,68 @@ var relayonsettings = {
     "data": "{ \"relay\": \"1\" }",
 };
 
-var linealertonsettings = {
+var alertturnsettings = {
     "url": "https://notify-api.line.me/api/notify",
     "method": "POST",
-    "timeout": 0,
+
     "headers": {
+        "Authorization": "Bearer 1x97KYH8PaSrwQRRzPVk2F61xMsUPNesfoqaEHwZ4hk",
         "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": "Bearer cdVag98qdw8B5J4tAZscHW8TrQNanXSdtXCibnhus02"
-    },
-    "data": {
-        "message": "Turn on now!"
     }
 };
-
-var linealertoffsettings = {
-    "url": "https://notify-api.line.me/api/notify",
-    "method": "POST",
-    "timeout": 0,
-    "headers": {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": "Bearer cdVag98qdw8B5J4tAZscHW8TrQNanXSdtXCibnhus02"
-    },
-    "data": {
-        "message": "Turn off now!"
-    }
-};
-
 
 // hourlineChart data format for temperature in red and humidity in blue
-let hourchartData = {
-    labels: [],
-    datasets: [
-        {
-            label: "Temperature",
-            borderColor: "red",
-            backgroundColor: "rgba(305, 0, 0, 0.1)",
-            data: []
-        },
-        {
-            label: "Humidity",
-            borderColor: "blue",
-            backgroundColor: "rgba(0, 0, 305, 0.1)",
-            data: []
-        }
-    ]
-};
+// let hourchartData = {
+// 	labels: [],
+// 	datasets: [
+// 		{
+// 			label: "Temperature",
+// 			borderColor: "red",
+// 			backgroundColor: "rgba(305, 0, 0, 0.1)",
+// 			data: []
+// 		},
+// 		{
+// 			label: "Humidity",
+// 			borderColor: "blue",
+// 			backgroundColor: "rgba(0, 0, 305, 0.1)",
+// 			data: []
+// 		}
+// 	]
+// };
 
-// Create the line hour chart
-const ctx = document.getElementById('hourlineChart').getContext('2d');
-const hourlineChart = new Chart(ctx, {
-    type: 'line',
-    data: hourchartData,
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            tooltip: {
-                mode: 'index',
-                intersect: false
-            },
-            title: {
-                display: true,
-                text: 'Hour Line Chart'
-            }
-        }
-    },
-    scales: {
-        x: {
-            title: {
-                display: true,
-                text: 'Time'
-            }
-        },
-        y: {
-            Min: 20,
-            // the data maximum used for determining the ticks is Math.max(dataMax, suggestedMax)
-            Max: 100,
-        }
-    }
-});
+// // Create the line hour chart
+// const ctx = document.getElementById('hourlineChart').getContext('2d');
+// const hourlineChart = new Chart(ctx, {
+// 	type: 'line',
+// 	data: hourchartData,
+// 	options: {
+// 		responsive: true,
+// 		maintainAspectRatio: false,
+// 		plugins: {
+// 			tooltip: {
+// 				mode: 'index',
+// 				intersect: false
+// 			},
+// 			title: {
+// 				display: true,
+// 				text: 'Hour Line Chart'
+// 			}
+// 		}
+// 	},
+// 	scales: {
+// 		x: {
+// 			title: {
+// 				display: true,
+// 				text: 'Time'
+// 			}
+// 		},
+// 		y: {
+// 			Min: 20,
+// 			// the data maximum used for determining the ticks is Math.max(dataMax, suggestedMax)
+// 			Max: 100,
+// 		}
+// 	}
+// });
 
 // Fetch variables from Firebase into FirebaseIOT array Realtime database
 var settings = {
@@ -130,7 +113,7 @@ var settings = {
 };
 
 // variables that are for saving the data from the fetchdata
-var savedshadowdata;
+var saveddata;
 var RHvalue;
 var autovalue;
 var RHsetvalue;
@@ -139,7 +122,6 @@ function doAjax() {
         saveddata = response;
         // console.log(response["data"]);
         var RHvalue = response["humidity"];
-        var RHgaguevalue = RHvalue / 100;
         var tempvalue = response["temperature"];
         // Display maual button status from Firebase into FirebaseIOT array Realtime database
         var manualvalue = response["manual"];
@@ -156,11 +138,16 @@ function doAjax() {
             document.getElementById("autobutton").checked = true;
             document.getElementById("maualbutton").disabled = true;
             // document.getElementById(".maualbutton").style.backgroundColor = "grey";
+            if (RHvalue < 50) {
+                document.getElementById("alertswitch").disabled = false;
+            }
         }
         // Set "auto off" status and enable for manual mode
         else if (autovalue == '0') {
             document.getElementById("autobutton").checked = false;
             document.getElementById("maualbutton").disabled = false;
+            document.getElementById("alertswitch").setAttribute("disabled", true);
+            document.getElementById("alertswitch").checked = false;
         }
         // Display RHsetting value to slider from Firebase into FirebaseIOT array Realtime database
         var RHsetvalue = `${response["RHset"]}`;
@@ -187,11 +174,23 @@ function doAjax() {
         displayedtemp.innerHTML = addtemp;
         const displayedRH = document.getElementById("labelRH");
         displayedRH.innerHTML = addRH;
-    },
+
+
+
+    }
     );
 }
 // setTimeout(doAjax, 2000);
 setInterval(doAjax, 2500);
+
+// // Send the danger message to Line notify when the RH is more than 55% (that is suitable to store camera lens)
+// if (document.getElementById("alertswitch").checked = true && RHvalue >=55) {
+//     console.log("SEND LINE");
+//     $.ajax(alertturnsettings).done(function (alertturnresponse) {
+//         // console.log("RH High!!", alertturnresponse);
+//         document.getElementById("alertswitch").checked = false;
+//     });
+// }
 
 // // Fetch temp and RH data from server using jQuery's AJAX method
 // function fetchDataAndUpdateChart() {
@@ -235,7 +234,7 @@ $.ajax(hourdigramsettings).done(function (hourdigramresponse) {
     var array1 = [];
     var array2 = [];
     var arraytimestamp = [];
-    console.log("Data from Firebase is:", hourdigramresponse);
+    console.log("DHT Data with timestamp from Firebase is:", hourdigramresponse);
     // for (var i = 0; i < RHhourvalues.length; i++) {
     //     // var split = .push(RHhourvalues[i]);
     //     array1.push(RHhourvalues[i]["1"]);
@@ -285,9 +284,6 @@ function compareRH(autovalue, RHvalue, RHsetvalue) {
             });
             $.ajax(relayonsettings).done(function (relayonresponse) {
             });
-            $.ajax(linealertonsettings).done(function (linealertonresponse) {
-                // console.log(linealertonresponse);
-            });
         }
         // If not, publish the RHsetting value and relay "off" status to Firebase into FirebaseIOT array Realtime database
         else {
@@ -303,9 +299,6 @@ function compareRH(autovalue, RHvalue, RHsetvalue) {
             $.ajax(RHsetvaluesettings).done(function (RHsettingresponse) {
             });
             $.ajax(relayoffsettings).done(function (relayoffresponse) {
-            });
-            $.ajax(linealertoffsettings).done(function (linealertoffresponse) {
-                // console.log(linealertoffresponse);
             });
         }
     }
@@ -325,7 +318,9 @@ function compareRH(autovalue, RHvalue, RHsetvalue) {
     }
 }
 
-// var something = "{ \"RHset\": " + RHsetvalue + "}";
+function alertturn() {
+
+}
 
 // Publish manual "on" and relay "on" together to Firebase into FirebaseIOT array Realtime database
 var manualonsettings = {
@@ -379,9 +374,6 @@ function togglemanual() {
         $.ajax(relayonsettings).done(function (relayonresponse) {
         });
         console.log("TURN ON manual NOW");
-        $.ajax(linealertonsettings).done(function (linealertonresponse) {
-            // console.log(linealertonresponse);
-        });
     }
     else {
         $.ajax(manualoffsettings).done(function (manualoffresponse) {
@@ -389,9 +381,6 @@ function togglemanual() {
         $.ajax(relayoffsettings).done(function (relayoffresponse) {
         });
         console.log("TURN OFF manual NOW");
-        $.ajax(linealertoffsettings).done(function (linealertoffresponse) {
-            // console.log(linealertoffresponse);
-        });
     }
 }
 
@@ -448,23 +437,23 @@ function showdiagram() {
     $('#chartContainer').toggleClass('hidden');
 }
 
-document.getElementById("hourchartContainer").style.display = "none";
+// document.getElementById("hourchartContainer").style.display = "none";
 
-var coll = document.getElementsByClassName("collapsiblehour");
-var count;
+// var coll = document.getElementsByClassName("collapsiblehour");
+// var count;
 
-for (count = 0; count < coll.length; count++) {
-    coll[count].addEventListener("click", function () {
-        this.classList.toggle("active");
-        var content = document.getElementById("hourchartContainer");
-        if (content.style.display === "block") {
-            content.style.display = "none";
-            // document.getElementById("chartContainer").style.display = "none";
-        } else {
-            content.style.display = "block";
-        }
-    });
-}
+// for (count = 0; count < coll.length; count++) {
+//     coll[count].addEventListener("click", function () {
+//         this.classList.toggle("active");
+//         var content = document.getElementById("hourchartContainer");
+//         if (content.style.display === "block") {
+//             content.style.display = "none";
+//             // document.getElementById("chartContainer").style.display = "none";
+//         } else {
+//             content.style.display = "block";
+//         }
+//     });
+// }
 
 // document.getElementById("daychartContainer").style.display = "none";
 
@@ -482,3 +471,6 @@ for (count = 0; count < coll.length; count++) {
 //         }
 //     });
 // }
+
+// document.getElementById("alertswitch").setAttribute("disabled", true);
+// // document.getElementById("alertswitch").disabled = false;
