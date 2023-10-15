@@ -138,14 +138,20 @@ function doAjax() {
             document.getElementById("autobutton").checked = true;
             document.getElementById("maualbutton").disabled = true;
             // document.getElementById(".maualbutton").style.backgroundColor = "grey";
-            if (RHvalue < 50) {
+            if (RHvalue <= 50) {
+                // console.log("Alert function is able");
                 document.getElementById("alertswitch").disabled = false;
+            }
+            else {
+                document.getElementById("alertswitch").setAttribute("disabled", true);
+                // console.log("Alert function is disable");
             }
         }
         // Set "auto off" status and enable for manual mode
         else if (autovalue == '0') {
             document.getElementById("autobutton").checked = false;
             document.getElementById("maualbutton").disabled = false;
+            // console.log("Alert function is off");
             document.getElementById("alertswitch").setAttribute("disabled", true);
             document.getElementById("alertswitch").checked = false;
         }
@@ -175,15 +181,13 @@ function doAjax() {
         const displayedRH = document.getElementById("labelRH");
         displayedRH.innerHTML = addRH;
 
-
-
     }
     );
 }
 // setTimeout(doAjax, 2000);
 setInterval(doAjax, 2500);
 
-// // Send the danger message to Line notify when the RH is more than 55% (that is suitable to store camera lens)
+// Send the danger message to Line notify when the RH is more than 55% (that is suitable to store camera lens)
 // if (document.getElementById("alertswitch").checked = true && RHvalue >=55) {
 //     console.log("SEND LINE");
 //     $.ajax(alertturnsettings).done(function (alertturnresponse) {
@@ -191,6 +195,18 @@ setInterval(doAjax, 2500);
 //         document.getElementById("alertswitch").checked = false;
 //     });
 // }
+function mincheckingalert() {
+    $.ajax(settings).done(function (response) {
+        var RHvalue = response["humidity"];
+        if (document.getElementById("alertswitch").checked = true && RHvalue >= 55) {
+            console.log("SEND LINE");
+            var win = window.open('https://script.google.com/macros/s/AKfycbxlLiS2E1TydhquNupmmymIkXcv4TFCyMibycYQDqKO_hV8ppGjQBSvY2lRBo6DUfKA/exec?lntoken=1x97KYH8PaSrwQRRzPVk2F61xMsUPNesfoqaEHwZ4hk&message=RH+Danger&messagefrom=Notification', '_blank');
+            win.focus();
+            document.getElementById("alertswitch").checked = false;
+        }
+    })
+}
+setTimeout(mincheckingalert, 30000);
 
 // // Fetch temp and RH data from server using jQuery's AJAX method
 // function fetchDataAndUpdateChart() {
