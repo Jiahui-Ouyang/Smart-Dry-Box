@@ -45,10 +45,11 @@ var relayonsettings = {
 var alertturnsettings = {
     "url": "https://notify-api.line.me/api/notify",
     "method": "POST",
-
     "headers": {
         "Authorization": "Bearer 1x97KYH8PaSrwQRRzPVk2F61xMsUPNesfoqaEHwZ4hk",
         "Content-Type": "application/x-www-form-urlencoded",
+    }, "data": {
+        "message": "\"Danger!\""
     }
 };
 
@@ -196,12 +197,17 @@ setInterval(doAjax, 2500);
 //     });
 // }
 function mincheckingalert() {
+
     $.ajax(settings).done(function (response) {
         var RHvalue = response["humidity"];
-        if (document.getElementById("alertswitch").checked = true && RHvalue >= 55) {
+        var autovalue = response["auto"];
+        // console.log("RH NOW IS", RHvalue, "     auto is", autovalue);
+
+        if ((document.getElementById("alertswitch").checked == true) && RHvalue >= 55 && autovalue == '1') {
             console.log("SEND LINE");
             var win = window.open('https://script.google.com/macros/s/AKfycbxlLiS2E1TydhquNupmmymIkXcv4TFCyMibycYQDqKO_hV8ppGjQBSvY2lRBo6DUfKA/exec?lntoken=1x97KYH8PaSrwQRRzPVk2F61xMsUPNesfoqaEHwZ4hk&message=RH+Danger&messagefrom=Notification', '_blank');
-            win.focus();
+            // win.focus();
+            win.blur();
             document.getElementById("alertswitch").checked = false;
         }
     })
