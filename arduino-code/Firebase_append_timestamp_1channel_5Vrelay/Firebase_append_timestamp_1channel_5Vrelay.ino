@@ -4,6 +4,7 @@
 // #include <Firebase_ESP_Client.h>
 #include <DHT.h>
 
+#include <TridentTD_LineNotify.h>
 // Provide the token generation process info.
 #include <addons/TokenHelper.h>
 
@@ -16,6 +17,7 @@
 #define API_KEY "AIzaSyDDI0lCBWdyd-GANBOkLdYOkDxpvpFOQUw"
 #define WIFI_SSID "Ouyang123-2.4G"
 #define WIFI_PASSWORD "0988088011"
+#define LINE_TOKEN "1x97KYH8PaSrwQRRzPVk2F61xMsUPNesfoqaEHwZ4hk"  // token line
 
 
 #define DHTPIN D1
@@ -40,6 +42,9 @@ unsigned long sendDataPrevMillis = 0;
 int count = 0;
 bool signupOK = false;
 unsigned long sendDataSndMillis = 0;
+unsigned long sendalertMillis = 0;
+String linetext = "RH danger";
+
 
 void setup() {
   Serial.begin(115200);
@@ -48,7 +53,7 @@ void setup() {
   dht.begin();
 
   pinMode(PIN_RELAY, OUTPUT);
-  digitalWrite(PIN_RELAY, LOW);
+  digitalWrite(PIN_RELAY, HIGH);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
@@ -59,7 +64,9 @@ void setup() {
   Serial.println();
   Serial.print("Connected with IP: ");
   Serial.println(WiFi.localIP());
+
   Serial.println();
+  // LINE.setToken(LINE_TOKEN);
   /* Assign the api key (required) */
   config.api_key = API_KEY;
 
@@ -113,11 +120,11 @@ void loop() {
       // Serial.println(val);
       // Serial.println("\n Change value at firebase console to see changes here.");
       if (val == "1") {
-        digitalWrite(PIN_RELAY, HIGH);
+        digitalWrite(PIN_RELAY, LOW);
         Serial.println("relay on");
         Serial.println();
       } else if (val == "0") {
-        digitalWrite(PIN_RELAY, LOW);
+        digitalWrite(PIN_RELAY, HIGH);
         Serial.println("relay off");
         Serial.println();
       }
@@ -125,10 +132,28 @@ void loop() {
       Serial.println(fbdo.errorReason());
     }
 
-    // String relaySTA=Firebase.getString(fbdo, F("/FirebaseIOT/relay"));
-    // if (fbdo.httpCode() == FIREBASE_ERROR_HTTP_CODE_OK) {
-    // printf("RELAY: %lld\n", fbdo.to<const char *>());
+    // if (Firebase.getString(fbdo, F("/FirebaseIOT/alert"))) {  // On successful Read operation, function returns 1
+    //   // Serial.println("Data type..: ", fbdo.dataType());
+    //   String alertval = fbdo.to<const char *>();
+    //   // Serial.println(alertval);
+    //   // Serial.println("\n Change value at firebase console to see changes here.");
+    //   if (alertval == "1") {
+    //     delay(1000);
+    //     if (millis() > sendalertMillis) {
+    //       sendalertMillis = millis() + 1000;  // Upload Every seconds/mins!
+    //       LINE.setToken(LINE_TOKEN);
+    //       LINE.notify("Danger RH");
+    //       delay(500);
+    //     }
+    //     Firebase.setString(fbdo, "/FirebaseIOT/alert", 0);
+    //     Serial.println("Line notificaiton is sent");
+    //   } else if (alertval == "0") {
+    //     Serial.println("Safe RH");
+    //   }
+    // } else {
+    //   Serial.println(fbdo.errorReason());
     // }
+
     delay(1000);
   }
 
