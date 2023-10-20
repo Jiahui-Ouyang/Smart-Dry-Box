@@ -276,7 +276,7 @@ $.ajax(hourdigramsettings).done(function (hourdigramresponse) {
         // var split = .push(RHhourvalues[i]);
         array1.push(RHhourvalues);
         // console.log("RH value is", RHhourvalues);
-        if (houragotimestamp > timestampvalues) {
+        if (houragotimestamp < timestampvalues) {
             hourchartData.datasets[1].data.push(RHhourvalues);
             hourchartData.datasets[0].data.push(temphourvalues);
             var hourtime = new Date(timestampvalues).getHours();
