@@ -1,3 +1,5 @@
+// const { response } = require("express");
+
 // 1. Scroll To Top 
 $(window).on('scroll', function () {
     if ($(this).scrollTop() > 300) {
@@ -54,57 +56,57 @@ var alertturnsettings = {
 };
 
 // hourlineChart data format for temperature in red and humidity in blue
-// let hourchartData = {
-// 	labels: [],
-// 	datasets: [
-// 		{
-// 			label: "Temperature",
-// 			borderColor: "red",
-// 			backgroundColor: "rgba(305, 0, 0, 0.1)",
-// 			data: []
-// 		},
-// 		{
-// 			label: "Humidity",
-// 			borderColor: "blue",
-// 			backgroundColor: "rgba(0, 0, 305, 0.1)",
-// 			data: []
-// 		}
-// 	]
-// };
+let hourchartData = {
+    labels: [],
+    datasets: [
+        {
+            label: "Temperature",
+            borderColor: "red",
+            backgroundColor: "rgba(305, 0, 0, 0.1)",
+            data: []
+        },
+        {
+            label: "Humidity",
+            borderColor: "blue",
+            backgroundColor: "rgba(0, 0, 305, 0.1)",
+            data: []
+        }
+    ]
+};
 
-// // Create the line hour chart
-// const ctx = document.getElementById('hourlineChart').getContext('2d');
-// const hourlineChart = new Chart(ctx, {
-// 	type: 'line',
-// 	data: hourchartData,
-// 	options: {
-// 		responsive: true,
-// 		maintainAspectRatio: false,
-// 		plugins: {
-// 			tooltip: {
-// 				mode: 'index',
-// 				intersect: false
-// 			},
-// 			title: {
-// 				display: true,
-// 				text: 'Hour Line Chart'
-// 			}
-// 		}
-// 	},
-// 	scales: {
-// 		x: {
-// 			title: {
-// 				display: true,
-// 				text: 'Time'
-// 			}
-// 		},
-// 		y: {
-// 			Min: 20,
-// 			// the data maximum used for determining the ticks is Math.max(dataMax, suggestedMax)
-// 			Max: 100,
-// 		}
-// 	}
-// });
+// Create the line hour chart
+const ctx = document.getElementById('hourlineChart').getContext('2d');
+const hourlineChart = new Chart(ctx, {
+    type: 'line',
+    data: hourchartData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            tooltip: {
+                mode: 'index',
+                intersect: false
+            },
+            title: {
+                display: true,
+                text: 'Hour Line Chart'
+            }
+        }
+    },
+    scales: {
+        x: {
+            title: {
+                display: true,
+                text: 'Time'
+            }
+        },
+        y: {
+            Min: 20,
+            // the data maximum used for determining the ticks is Math.max(dataMax, suggestedMax)
+            Max: 100,
+        }
+    }
+});
 
 // Fetch variables from Firebase into FirebaseIOT array Realtime database
 var settings = {
@@ -242,36 +244,52 @@ setTimeout(mincheckingalert, 30000);
 // // Fetch and update chart data every 10 second
 // setInterval(fetchDataAndUpdateChart, 10000);
 
+
+var currentDate = new Date();
+var currenttimestamp = currentDate.getTime();
+var hourago = new Date(currenttimestamp - (1000 * 60 * 60));
+var houragotimestamp = hourago.getTime();
+// var houragotimestamp = Math.round(houragotimestamp / 1000);
+console.log("current timestamp is:", currenttimestamp);
+console.log("An hour ago timestamp is:", houragotimestamp);
 var hourdigramsettings = {
-    "url": 'https://smart-dry-box-default-rtdb.firebaseio.com/DHT11.json', // Replace with the API URL to fetch data from the server
+    "url": "https://smart-dry-box-default-rtdb.firebaseio.com/DHT11.json", // Replace with the API URL to fetch data from the server
     "method": 'GET',
     "timeout": 0
 };
 
 
 $.ajax(hourdigramsettings).done(function (hourdigramresponse) {
-    var RHhourvalues = Object.values(hourdigramresponse)[0]["Hum"];
-    var temphourvalues = Object.values(hourdigramresponse)[0]["Temp"];
-    var timestampvalues = Object.values(hourdigramresponse)[0]["Timestamp"]
+
     var array1 = [];
     var array2 = [];
     var arraytimestamp = [];
     console.log("DHT Data with timestamp from Firebase is:", hourdigramresponse);
-    // for (var i = 0; i < RHhourvalues.length; i++) {
-    //     // var split = .push(RHhourvalues[i]);
-    //     array1.push(RHhourvalues[i]["1"]);
-    //     // hourchartData.datasets[1].data.push(RHhourvalues[i]["1"]);
+    // console.log(Object.keys(hourdigramresponse).length);
+    // console.log(Object.values(hourdigramresponse));
+    // console.log(Object.values(hourdigramresponse));
 
-    //     const converttime = new Date(RHhourvalues[i]["0"]);
-    //     var hourtime = converttime.getHours();
-    //     var mintime = converttime.getMinutes();
-    //     var realtime = hourtime + ':' + mintime;
-    //     const hourtime = new Intl.DateTimeFormat(options).format(RHhourvalues[i]["0"]);
-    //     console.log("Relatime IS", realtime);
-    //     arraytimestamp.push(RHhourvalues[i]["0"]);
-    //     // hourchartData.labels.push(realtime);
-    //     // hourchartData.labels.push(RHhourvalues[i]["0"]);
-    // }
+    for (var i = 0; i < Object.keys(hourdigramresponse).length; i++) {
+        var RHhourvalues = Object.values(hourdigramresponse)[i]["Hum"];
+        var temphourvalues = Object.values(hourdigramresponse)[i]["Temp"];
+        var timestampvalues = Object.values(hourdigramresponse)[i]["Timestamp"];
+        // var split = .push(RHhourvalues[i]);
+        array1.push(RHhourvalues);
+        // console.log("RH value is", RHhourvalues);
+        if (houragotimestamp > timestampvalues) {
+            hourchartData.datasets[1].data.push(RHhourvalues);
+            hourchartData.datasets[0].data.push(temphourvalues);
+            var hourtime = new Date(timestampvalues).getHours();
+            var mintime = new Date(timestampvalues).getMinutes();
+            var realtime = hourtime + ':' + mintime;
+            // console.log("Relatime IS", realtime);
+            hourchartData.labels.push(realtime);
+        }
+
+        // console.log("Timestamp from Firebase is", timestampvalues);
+
+
+    }
     // for (var i = 0; i < temphourvalues.length; i++) {
     //     // var split = .push(RHhourvalues[i]);
     //     // hourchartData.datasets[0].data.push(temphourvalues[i]["1"]);
@@ -283,12 +301,13 @@ $.ajax(hourdigramsettings).done(function (hourdigramresponse) {
     // console.log("HOUR TEMP:", array2);
 
     // Update the chart
-    // hourlineChart.update();
+    hourlineChart.update();
 });
 
 
 // For auto mode on, it needs to have comparsion between RH value from sensor and RH setting value
 function compareRH(autovalue, RHvalue, RHsetvalue) {
+    RHsetvalue = RHsetvalue.toString();
     // RHsettext = JSON.parse(RHsetvalue);
     // Publish the RHsetting value from slider to Firebase into FirebaseIOT array Realtime database; If RHsetting value <= RH, turn on relay published to Firebase Realtime database
     if (autovalue == "1") {
@@ -459,23 +478,23 @@ function showdiagram() {
     $('#chartContainer').toggleClass('hidden');
 }
 
-// document.getElementById("hourchartContainer").style.display = "none";
+document.getElementById("hourchartContainer").style.display = "none";
 
-// var coll = document.getElementsByClassName("collapsiblehour");
-// var count;
+var coll = document.getElementsByClassName("collapsiblehour");
+var count;
 
-// for (count = 0; count < coll.length; count++) {
-//     coll[count].addEventListener("click", function () {
-//         this.classList.toggle("active");
-//         var content = document.getElementById("hourchartContainer");
-//         if (content.style.display === "block") {
-//             content.style.display = "none";
-//             // document.getElementById("chartContainer").style.display = "none";
-//         } else {
-//             content.style.display = "block";
-//         }
-//     });
-// }
+for (count = 0; count < coll.length; count++) {
+    coll[count].addEventListener("click", function () {
+        this.classList.toggle("active");
+        var content = document.getElementById("hourchartContainer");
+        if (content.style.display === "block") {
+            content.style.display = "none";
+            // document.getElementById("chartContainer").style.display = "none";
+        } else {
+            content.style.display = "block";
+        }
+    });
+}
 
 // document.getElementById("daychartContainer").style.display = "none";
 
